@@ -1,6 +1,8 @@
-﻿using NPOI.HSSF.UserModel;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using NPOI.HSSF.UserModel;
 using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
+using NPOI.Util;
 using NPOI.XSSF.UserModel;
 using OfficeOpenXml;
 using System;
@@ -139,10 +141,37 @@ namespace ItrCalc
 
                         if (dr.IsNull(0) && dr.IsNull(1) && dr.IsNull(3) && dr.IsNull(4))
                             continue;
-
+                        dr["EntryType"] = "Received";
                         dataTable.Rows.Add(dr);
                     }
                     // Newline after each row
+                }
+
+                // Add provisional rows
+                var receivedSalaryRows = dataTable.AsEnumerable()
+                                .Where(row => row.Field<string>("EntryType") == "Received" && row.Field<string>("Type")=="SALARY");
+                var receivedSalaryMonthsCount  = receivedSalaryRows.Count();
+                if (receivedSalaryRows.Any() && receivedSalaryRows.Count() < 12 /*If credited for 12 months, no need to add provisional*/)
+                {
+                    var lastSalaryCreditRow  = receivedSalaryRows.Last();
+                    var lastCreditedMonth = lastSalaryCreditRow["Month"].ToString();
+                    var months = GetMonths();
+                    for (int provisonalRowIndex = receivedSalaryMonthsCount+1; provisonalRowIndex <= 12; provisonalRowIndex++)
+                    {
+                        var previousMonthIndex = months.IndexOf(lastCreditedMonth);
+                        var currentMonthIndex = previousMonthIndex == 11 ? 0 : previousMonthIndex + 1;
+                        var currentMonth = months[currentMonthIndex];
+                        var provRow = dataTable.NewRow();
+                        provRow.ItemArray =  lastSalaryCreditRow.ItemArray.Clone() as object[];
+                        provRow["S No."] = $"{dataTable.Rows.Count + 1}.";
+                        provRow["Month"] = currentMonth;
+                        provRow["EntryType"] = "Provisional";
+                        dataTable.Rows.Add( provRow );
+
+                        //prepare for next row
+                        lastSalaryCreditRow = provRow;
+                        lastCreditedMonth = currentMonth;
+                    }
                 }
 
                 // Close workbook
@@ -159,7 +188,13 @@ namespace ItrCalc
                 excelApp.Quit();
                 Marshal.ReleaseComObject(excelApp);
             }
-            MessageBox.Show(str.ToString());
+
+            //MessageBox.Show(str.ToString());
+            using (provisonalDataDialog dialog = new provisonalDataDialog())
+            {
+                dialog.SetDataTable(dataTable); 
+                dialog.ShowDialog();
+            }
         }
 
         private void LoadDatafromExcel()
@@ -224,7 +259,26 @@ namespace ItrCalc
             dt.Columns.Add("Bank A/C No");
             dt.Columns.Add("Name Of The Bank");
             dt.Columns.Add("Name Of The Bank Branch");
+            dt.Columns.Add("EntryType");
             return dt;
+        }
+
+        private List<string> GetMonths()
+        {
+            List<string> list = new List<string>();
+            list.Add("Jan");
+            list.Add("Feb");
+            list.Add("Mar");
+            list.Add("Apr");
+            list.Add("May");
+            list.Add("June");
+            list.Add("July");
+            list.Add("Aug");
+            list.Add("Sept");
+            list.Add("Oct");
+            list.Add("Nov");
+            list.Add("Dec");
+            return list;
         }
 
         private void importFilesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -237,10 +291,19 @@ namespace ItrCalc
 
             if (openFileDialog.ShowDialog() != DialogResult.OK)
             {
+                footerStatusValue.Text = "No files selected";
                 return;
             }
 
             selectedInputFiles = openFileDialog.FileNames.ToList<string>();
+            if (selectedInputFiles.Count > 1)
+            {
+                footerStatusValue.Text = "Multiple files selected1";
+            }
+            else
+            {
+                footerStatusValue.Text = selectedInputFiles.First();
+            }
         }
     }
 }
