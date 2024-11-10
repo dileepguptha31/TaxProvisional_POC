@@ -4,8 +4,10 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using OfficeOpenXml;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
@@ -14,6 +16,7 @@ namespace ItrCalc
 {
     public partial class Form1 : Form
     {
+        List<string> selectedInputFiles = new List<string>();
         public Form1()
         {
             InitializeComponent();
@@ -25,7 +28,12 @@ namespace ItrCalc
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.Commercial;
 
             // Load the Excel file
-            var fileInfo = new FileInfo(@"C:\Users\kiran\OneDrive\Desktop\ITR\kiran.xlsx");
+            if(selectedInputFiles.Count < 1)
+            {
+                return;
+            }
+
+            var fileInfo = new FileInfo(selectedInputFiles.First());
 
             using (var package = new ExcelPackage(fileInfo))
             {
@@ -46,8 +54,13 @@ namespace ItrCalc
 
         private void npoi_Click(object sender, EventArgs e)
         {
+            if (selectedInputFiles.Count < 1)
+            {
+                return;
+            }
+
             StringBuilder str = new StringBuilder();
-            string filePath = "C:\\Users\\kiran\\OneDrive\\Desktop\\ITR\\Paybilldetails40.xls";  // Specify your Excel file path
+            string filePath = selectedInputFiles.First();  // Specify your Excel file path
 
             // Open the Excel file
             using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
@@ -80,8 +93,13 @@ namespace ItrCalc
 
         private void ms_Click(object sender, EventArgs e)
         {
+            if (selectedInputFiles.Count < 1)
+            {
+                return;
+            }
+
             StringBuilder str = new StringBuilder();
-            string filePath = "C:\\Users\\kiran\\OneDrive\\Desktop\\ITR\\Paybilldetails (38).xls";  // Specify your Excel file path
+            string filePath = selectedInputFiles.First();  // Specify your Excel file path
             var dataTable = CreateDataTableMetaData();
             // Initialize Excel application
             var excelApp = new Microsoft.Office.Interop.Excel.Application();
@@ -207,6 +225,22 @@ namespace ItrCalc
             dt.Columns.Add("Name Of The Bank");
             dt.Columns.Add("Name Of The Bank Branch");
             return dt;
-        }        
+        }
+
+        private void importFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Excel Files (*.xls, *.xlsx)|*.xls;*.xlsx";
+            openFileDialog.FilterIndex = 0;
+            openFileDialog.Multiselect = true;
+            openFileDialog.RestoreDirectory = true;
+
+            if (openFileDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            selectedInputFiles = openFileDialog.FileNames.ToList<string>();
+        }
     }
 }

@@ -34,12 +34,17 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.menuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.footerPanel = new System.Windows.Forms.Panel();
+            this.footerStatus = new System.Windows.Forms.Label();
+            this.footerStatusValue = new System.Windows.Forms.Label();
+            this.executionProgress = new System.Windows.Forms.ProgressBar();
             this.menuStrip1.SuspendLayout();
+            this.footerPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // LoadItr
             // 
-            this.LoadItr.Location = new System.Drawing.Point(82, 155);
+            this.LoadItr.Location = new System.Drawing.Point(443, 175);
             this.LoadItr.Margin = new System.Windows.Forms.Padding(2);
             this.LoadItr.Name = "LoadItr";
             this.LoadItr.Size = new System.Drawing.Size(86, 33);
@@ -50,10 +55,10 @@
             // 
             // npoi
             // 
-            this.npoi.Location = new System.Drawing.Point(308, 155);
+            this.npoi.Location = new System.Drawing.Point(443, 268);
             this.npoi.Margin = new System.Windows.Forms.Padding(2);
             this.npoi.Name = "npoi";
-            this.npoi.Size = new System.Drawing.Size(78, 33);
+            this.npoi.Size = new System.Drawing.Size(86, 37);
             this.npoi.TabIndex = 1;
             this.npoi.Text = "npoi";
             this.npoi.UseVisualStyleBackColor = true;
@@ -61,10 +66,10 @@
             // 
             // ms
             // 
-            this.ms.Location = new System.Drawing.Point(194, 155);
+            this.ms.Location = new System.Drawing.Point(443, 221);
             this.ms.Margin = new System.Windows.Forms.Padding(2);
             this.ms.Name = "ms";
-            this.ms.Size = new System.Drawing.Size(77, 33);
+            this.ms.Size = new System.Drawing.Size(86, 33);
             this.ms.TabIndex = 2;
             this.ms.Text = "Ms";
             this.ms.UseVisualStyleBackColor = true;
@@ -76,7 +81,7 @@
             this.menuToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(600, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(710, 24);
             this.menuStrip1.TabIndex = 3;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -93,12 +98,52 @@
             this.importFilesToolStripMenuItem.Name = "importFilesToolStripMenuItem";
             this.importFilesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.importFilesToolStripMenuItem.Text = "Import Files";
+            this.importFilesToolStripMenuItem.Click += new System.EventHandler(this.importFilesToolStripMenuItem_Click);
+            // 
+            // footerPanel
+            // 
+            this.footerPanel.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.footerPanel.Controls.Add(this.executionProgress);
+            this.footerPanel.Controls.Add(this.footerStatusValue);
+            this.footerPanel.Controls.Add(this.footerStatus);
+            this.footerPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.footerPanel.Location = new System.Drawing.Point(0, 396);
+            this.footerPanel.Name = "footerPanel";
+            this.footerPanel.Size = new System.Drawing.Size(710, 23);
+            this.footerPanel.TabIndex = 4;
+            // 
+            // footerStatus
+            // 
+            this.footerStatus.AutoSize = true;
+            this.footerStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.footerStatus.Location = new System.Drawing.Point(0, 5);
+            this.footerStatus.Name = "footerStatus";
+            this.footerStatus.Size = new System.Drawing.Size(47, 13);
+            this.footerStatus.TabIndex = 0;
+            this.footerStatus.Text = "Status:";
+            // 
+            // footerStatusValue
+            // 
+            this.footerStatusValue.BackColor = System.Drawing.Color.Transparent;
+            this.footerStatusValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.footerStatusValue.Location = new System.Drawing.Point(47, 4);
+            this.footerStatusValue.Name = "footerStatusValue";
+            this.footerStatusValue.Size = new System.Drawing.Size(513, 18);
+            this.footerStatusValue.TabIndex = 1;
+            // 
+            // executionProgress
+            // 
+            this.executionProgress.Location = new System.Drawing.Point(567, 4);
+            this.executionProgress.Name = "executionProgress";
+            this.executionProgress.Size = new System.Drawing.Size(140, 19);
+            this.executionProgress.TabIndex = 2;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(600, 366);
+            this.ClientSize = new System.Drawing.Size(710, 419);
+            this.Controls.Add(this.footerPanel);
             this.Controls.Add(this.ms);
             this.Controls.Add(this.npoi);
             this.Controls.Add(this.LoadItr);
@@ -109,6 +154,8 @@
             this.Text = "Tax Report Generator";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.footerPanel.ResumeLayout(false);
+            this.footerPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -122,6 +169,10 @@
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem menuToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem importFilesToolStripMenuItem;
+        private System.Windows.Forms.Panel footerPanel;
+        private System.Windows.Forms.Label footerStatus;
+        private System.Windows.Forms.Label footerStatusValue;
+        private System.Windows.Forms.ProgressBar executionProgress;
     }
 }
 
