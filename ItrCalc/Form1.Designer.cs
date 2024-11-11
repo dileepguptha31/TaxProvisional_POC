@@ -35,19 +35,20 @@
             this.menuToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.importFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.footerPanel = new System.Windows.Forms.Panel();
-            this.footerStatus = new System.Windows.Forms.Label();
-            this.footerStatusValue = new System.Windows.Forms.Label();
             this.executionProgress = new System.Windows.Forms.ProgressBar();
+            this.footerStatusValue = new System.Windows.Forms.Label();
+            this.footerStatus = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.footerPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // LoadItr
             // 
-            this.LoadItr.Location = new System.Drawing.Point(443, 175);
-            this.LoadItr.Margin = new System.Windows.Forms.Padding(2);
+            this.LoadItr.Location = new System.Drawing.Point(591, 215);
+            this.LoadItr.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.LoadItr.Name = "LoadItr";
-            this.LoadItr.Size = new System.Drawing.Size(86, 33);
+            this.LoadItr.Size = new System.Drawing.Size(115, 41);
             this.LoadItr.TabIndex = 0;
             this.LoadItr.Text = "Load";
             this.LoadItr.UseVisualStyleBackColor = true;
@@ -55,10 +56,10 @@
             // 
             // npoi
             // 
-            this.npoi.Location = new System.Drawing.Point(443, 268);
-            this.npoi.Margin = new System.Windows.Forms.Padding(2);
+            this.npoi.Location = new System.Drawing.Point(591, 330);
+            this.npoi.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.npoi.Name = "npoi";
-            this.npoi.Size = new System.Drawing.Size(86, 37);
+            this.npoi.Size = new System.Drawing.Size(115, 46);
             this.npoi.TabIndex = 1;
             this.npoi.Text = "npoi";
             this.npoi.UseVisualStyleBackColor = true;
@@ -66,10 +67,10 @@
             // 
             // ms
             // 
-            this.ms.Location = new System.Drawing.Point(443, 221);
-            this.ms.Margin = new System.Windows.Forms.Padding(2);
+            this.ms.Location = new System.Drawing.Point(591, 272);
+            this.ms.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.ms.Name = "ms";
-            this.ms.Size = new System.Drawing.Size(86, 33);
+            this.ms.Size = new System.Drawing.Size(115, 41);
             this.ms.TabIndex = 2;
             this.ms.Text = "Ms";
             this.ms.UseVisualStyleBackColor = true;
@@ -77,11 +78,12 @@
             // 
             // menuStrip1
             // 
+            this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.menuToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(710, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(947, 28);
             this.menuStrip1.TabIndex = 3;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -90,13 +92,13 @@
             this.menuToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.importFilesToolStripMenuItem});
             this.menuToolStripMenuItem.Name = "menuToolStripMenuItem";
-            this.menuToolStripMenuItem.Size = new System.Drawing.Size(50, 20);
+            this.menuToolStripMenuItem.Size = new System.Drawing.Size(60, 24);
             this.menuToolStripMenuItem.Text = "Menu";
             // 
             // importFilesToolStripMenuItem
             // 
             this.importFilesToolStripMenuItem.Name = "importFilesToolStripMenuItem";
-            this.importFilesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.importFilesToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
             this.importFilesToolStripMenuItem.Text = "Import Files";
             this.importFilesToolStripMenuItem.Click += new System.EventHandler(this.importFilesMenuItem_Click);
             // 
@@ -107,49 +109,64 @@
             this.footerPanel.Controls.Add(this.footerStatusValue);
             this.footerPanel.Controls.Add(this.footerStatus);
             this.footerPanel.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.footerPanel.Location = new System.Drawing.Point(0, 396);
+            this.footerPanel.Location = new System.Drawing.Point(0, 488);
+            this.footerPanel.Margin = new System.Windows.Forms.Padding(4);
             this.footerPanel.Name = "footerPanel";
-            this.footerPanel.Size = new System.Drawing.Size(710, 23);
+            this.footerPanel.Size = new System.Drawing.Size(947, 28);
             this.footerPanel.TabIndex = 4;
             // 
-            // footerStatus
+            // executionProgress
             // 
-            this.footerStatus.AutoSize = true;
-            this.footerStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.footerStatus.Location = new System.Drawing.Point(0, 5);
-            this.footerStatus.Name = "footerStatus";
-            this.footerStatus.Size = new System.Drawing.Size(47, 13);
-            this.footerStatus.TabIndex = 0;
-            this.footerStatus.Text = "Status:";
+            this.executionProgress.Location = new System.Drawing.Point(756, 5);
+            this.executionProgress.Margin = new System.Windows.Forms.Padding(4);
+            this.executionProgress.Name = "executionProgress";
+            this.executionProgress.Size = new System.Drawing.Size(187, 23);
+            this.executionProgress.TabIndex = 2;
             // 
             // footerStatusValue
             // 
             this.footerStatusValue.BackColor = System.Drawing.Color.Transparent;
             this.footerStatusValue.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.footerStatusValue.Location = new System.Drawing.Point(47, 4);
+            this.footerStatusValue.Location = new System.Drawing.Point(63, 5);
+            this.footerStatusValue.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.footerStatusValue.Name = "footerStatusValue";
-            this.footerStatusValue.Size = new System.Drawing.Size(513, 18);
+            this.footerStatusValue.Size = new System.Drawing.Size(683, 22);
             this.footerStatusValue.TabIndex = 1;
             // 
-            // executionProgress
+            // footerStatus
             // 
-            this.executionProgress.Location = new System.Drawing.Point(567, 4);
-            this.executionProgress.Name = "executionProgress";
-            this.executionProgress.Size = new System.Drawing.Size(140, 19);
-            this.executionProgress.TabIndex = 2;
+            this.footerStatus.AutoSize = true;
+            this.footerStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.footerStatus.Location = new System.Drawing.Point(0, 6);
+            this.footerStatus.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.footerStatus.Name = "footerStatus";
+            this.footerStatus.Size = new System.Drawing.Size(59, 17);
+            this.footerStatus.TabIndex = 0;
+            this.footerStatus.Text = "Status:";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(840, 199);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 5;
+            this.button1.Text = "DUMMYEXCEL";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(710, 419);
+            this.ClientSize = new System.Drawing.Size(947, 516);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.footerPanel);
             this.Controls.Add(this.ms);
             this.Controls.Add(this.npoi);
             this.Controls.Add(this.LoadItr);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(2);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
             this.Text = "Tax Report Generator";
             this.menuStrip1.ResumeLayout(false);
@@ -173,6 +190,7 @@
         private System.Windows.Forms.Label footerStatus;
         private System.Windows.Forms.Label footerStatusValue;
         private System.Windows.Forms.ProgressBar executionProgress;
+        private System.Windows.Forms.Button button1;
     }
 }
 

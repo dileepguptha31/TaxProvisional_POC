@@ -142,7 +142,9 @@ namespace ItrCalc
 
                         if (dr.IsNull(0) && dr.IsNull(1) && dr.IsNull(3) && dr.IsNull(4))
                             continue;
+
                         dr["EntryType"] = "Received";
+
                         dataTable.Rows.Add(dr);
                     }
                     // Newline after each row
@@ -397,5 +399,117 @@ namespace ItrCalc
                 footerStatusValue.Text = selectedInputFiles.First();
             }
         }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            List<Person> people = new List<Person>
+        {
+            new Person { Name = "John Doe", Age = 30, Gender = "Male", City = "New York" },
+            new Person { Name = "Jane Smith", Age = 25, Gender = "Female", City = "Los Angeles" },
+            new Person { Name = "Samuel Green", Age = 35, Gender = "Male", City = "Chicago" }
+        };
+            string filePath = "C:\\Users\\kiran\\OneDrive\\Desktop\\ITR\\people.xlsx";
+
+            // Call the method to write the data into Excel
+            WriteDataToExcel(people, filePath);
+        }
+        //static void WriteDataToExcel(List<Person> people, string filePath)
+        //{
+        //    // Create an Excel application object
+        //    Microsoft.Office.Interop.Excel.Application excelApp = new Microsoft.Office.Interop.Excel.Application();
+        //    if (excelApp == null)
+        //    {
+        //        Console.WriteLine("Excel is not installed properly!");
+        //        return;
+        //    }
+
+        //    // Create a new workbook and worksheet
+        //    Microsoft.Office.Interop.Excel.Workbook workbook = excelApp.Workbooks.Add();
+        //    Microsoft.Office.Interop.Excel.Worksheet worksheet = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Sheets[1];
+        //    worksheet.Name = "People";  // Set the worksheet name
+
+        //    // Set the column headers
+        //    worksheet.Cells[1, 1] = "Name";
+        //    worksheet.Cells[1, 2] = "Age";
+        //    worksheet.Cells[1, 3] = "Gender";
+        //    worksheet.Cells[1, 4] = "City";
+
+        //    Microsoft.Office.Interop.Excel.Range headerRange = worksheet.Range["A1:F2"];
+        //    headerRange.Merge();
+        //    headerRange.Font.Size = 22;
+        //    headerRange.Font.FontStyle = System.Drawing.FontStyle.Bold;
+        //    headerRange.Font.Name = "Calibri";
+        //    headerRange.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;  // Center align text horizontally
+        //    headerRange.VerticalAlignment = Microsoft.Office.Interop.Excel.XlVAlign.xlVAlignCenter;
+        //    headerRange.Value = "Basic Information for Income Tax computation As per  HRMS";
+
+        //    // Write data to Excel starting from the second row
+        //    for (int i = 0; i < people.Count; i++)
+        //    {
+        //        var person = people[i];
+        //        worksheet.Cells[i + 2, 1] = person.Name;
+        //        worksheet.Cells[i + 2, 2] = person.Age;
+        //        worksheet.Cells[i + 2, 3] = person.Gender;
+        //        worksheet.Cells[i + 2, 4] = person.City;
+        //    }
+
+        //    // Save the workbook to the specified file path
+        //    workbook.SaveAs(filePath);
+
+        //    // Close the workbook and quit the Excel application
+        //    workbook.Close(false);
+        //    excelApp.Quit();
+
+        //    // Release COM objects to prevent memory leaks
+        //    Marshal.ReleaseComObject(worksheet);
+        //    Marshal.ReleaseComObject(workbook);
+        //    Marshal.ReleaseComObject(excelApp);
+        //}
+
+        static void WriteDataToExcel<T>(List<T> data, string filePath)
+        {
+            ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.Commercial;
+            using (var package = new ExcelPackage())
+            {
+                var worksheet = package.Workbook.Worksheets.Add(typeof(T).Name);
+
+                // Get class properties
+                var properties = typeof(T).GetProperties();
+
+                var range = worksheet.Cells["A1:F2"];
+                range.Merge = true;  // Merge the cells
+
+                // Set the font size for the merged cells
+                range.Style.Font.Size = 22;  // Set the font size to 16 (or your desired size)
+                range.Style.Font.Bold = true;
+                range.Value = "Basic Information for Income Tax computation As per  HRMS";
+
+                // Write headers
+                for (int i = 0; i < properties.Length; i++)
+                {
+                    worksheet.Cells[3, i + 1].Value = properties[i].Name;
+                }
+
+                // Write data
+                for (int i = 0; i < data.Count; i++)
+                {
+                    for (int j = 0; j < properties.Length; j++)
+                    {
+                        worksheet.Cells[i + 3, j + 1].Value = properties[j].GetValue(data[i]);
+                    }
+                }
+
+                // Save the file
+                FileInfo fi = new FileInfo(filePath);
+                package.SaveAs(fi);
+            }
+        }
+    }
+    public class Person
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+        public string Gender { get; set; }
+        public string City { get; set; }
     }
 }
