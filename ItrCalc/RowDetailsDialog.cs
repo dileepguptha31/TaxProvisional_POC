@@ -17,6 +17,20 @@ namespace ItrCalc
             InitializeComponent();
         }
 
+        public void SetDictionary(Dictionary<string, (decimal total, decimal currentEmployerTotal, decimal cumulativeTotal)> data)
+        {
+            dataGridView1.Columns.Add("Type", "Type");
+            dataGridView1.Columns.Add("Total", "Total");
+            dataGridView1.Columns.Add("CurrentDDO", "Current DDO");
+            dataGridView1.Columns.Add("PreviousDDOs", "Cumulative");
+
+            foreach (var item in data)
+            {
+                dataGridView1.Rows.Add(item.Key, item.Value.total, item.Value.currentEmployerTotal, item.Value.cumulativeTotal);
+            }
+            
+        }
+
         public void SetDataTable(DataTable table)
         {
             foreach (DataColumn column in table.Columns)

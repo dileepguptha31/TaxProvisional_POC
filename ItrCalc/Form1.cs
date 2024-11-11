@@ -30,7 +30,7 @@ namespace ItrCalc
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.Commercial;
 
             // Load the Excel file
-            if(selectedInputFiles.Count < 1)
+            if (selectedInputFiles.Count < 1)
             {
                 return;
             }
@@ -103,6 +103,7 @@ namespace ItrCalc
             StringBuilder str = new StringBuilder();
             string filePath = selectedInputFiles.First();  // Specify your Excel file path
             var dataTable = CreateDataTableMetaData();
+            var results = new Dictionary<string, (decimal total, decimal currentEmployerTotal, decimal cumulativeTotal)>();
             // Initialize Excel application
             var excelApp = new Microsoft.Office.Interop.Excel.Application();
             excelApp.Visible = false;  // Do not show Excel UI
@@ -122,15 +123,15 @@ namespace ItrCalc
                 // Loop through rows and columns
                 for (int row = 1; row <= rowCount; row++)
                 {
-                   
-                    if(dataonly || ((Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row, 1]).Value2 == "S No.")
+
+                    if (dataonly || ((Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row, 1]).Value2 == "S No.")
                     {
                         if (!dataonly)
                         {
                             dataonly = true;
                             dataHeader = row;
                             continue;
-                        }                       
+                        }
                         DataRow dr = dataTable.NewRow();
                         for (int col = 1; col <= colCount; col++)
                         {
@@ -149,30 +150,102 @@ namespace ItrCalc
 
                 // Add provisional rows
                 var receivedSalaryRows = dataTable.AsEnumerable()
-                                .Where(row => row.Field<string>("EntryType") == "Received" && row.Field<string>("Type")=="SALARY");
-                var receivedSalaryMonthsCount  = receivedSalaryRows.Count();
+                                .Where(row => row.Field<string>("EntryType") == "Received" && row.Field<string>("Type") == "SALARY");
+                var receivedSalaryMonthsCount = receivedSalaryRows.Count();
                 if (receivedSalaryRows.Any() && receivedSalaryRows.Count() < 12 /*If credited for 12 months, no need to add provisional*/)
                 {
-                    var lastSalaryCreditRow  = receivedSalaryRows.Last();
+                    var lastSalaryCreditRow = receivedSalaryRows.Last();
                     var lastCreditedMonth = lastSalaryCreditRow["Month"].ToString();
                     var months = GetMonths();
-                    for (int provisonalRowIndex = receivedSalaryMonthsCount+1; provisonalRowIndex <= 12; provisonalRowIndex++)
+                    for (int provisonalRowIndex = receivedSalaryMonthsCount + 1; provisonalRowIndex <= 12; provisonalRowIndex++)
                     {
                         var previousMonthIndex = months.IndexOf(lastCreditedMonth);
                         var currentMonthIndex = previousMonthIndex == 11 ? 0 : previousMonthIndex + 1;
                         var currentMonth = months[currentMonthIndex];
                         var provRow = dataTable.NewRow();
-                        provRow.ItemArray =  lastSalaryCreditRow.ItemArray.Clone() as object[];
+                        provRow.ItemArray = lastSalaryCreditRow.ItemArray.Clone() as object[];
                         provRow["S No."] = $"{dataTable.Rows.Count + 1}.";
                         provRow["Month"] = currentMonth;
                         provRow["EntryType"] = "Provisional";
-                        dataTable.Rows.Add( provRow );
+                        dataTable.Rows.Add(provRow);
 
                         //prepare for next row
                         lastSalaryCreditRow = provRow;
                         lastCreditedMonth = currentMonth;
                     }
                 }
+
+                //Tab2 (Basic information details) prepartion
+                //==========================================
+
+                var data = dataTable.AsEnumerable();
+                var areMultipleEmployers = data.GroupBy(row => row.Field<string>("DDO Code")).Count();
+                var lastData = data.Last();
+                var currentEmployer = lastData["DDO Code"].ToString();
+                var kgidno = lastData["KGID No"];
+                var employeeName = lastData["Employee Name"];
+                var panNo = lastData["PAN No"];
+                var designation = lastData["Designation"];
+                //salary
+                //var totalSalary = calculateSum(data, "Basic Pay");
+                //decimal currentEmployerTotalBasicPay = calculateSum(data, "Basic Pay", currentEmployer);
+                //decimal cumulativeTatalBasicPay =  totalSalary - currentEmployerTotalBasicPay;
+
+                //var totalStaginationInc = calculateSum(data, "Stagnation Increment");
+                //decimal currentEmployerTotalStaginationInc = calculateSum(data,"Stagnation Increment", currentEmployer);
+                //decimal cumulativeTatalStaginationInc = totalStaginationInc - currentEmployerTotalStaginationInc;
+
+                //var totalDA = calculateSum(data, "DA");
+                //decimal currentEmployerTotalDA = calculateSum(data, "DA", currentEmployer);
+                //decimal cumulativeTatalDA = totalDA - currentEmployerTotalDA;
+
+                //var totalHRA = calculateSum(data, "HRA");
+                //decimal currentEmployerTotalHRA = calculateSum(data, "HRA", currentEmployer);
+                //decimal cumulativeTatalHRA = totalHRA - currentEmployerTotalHRA;
+
+                //var totalSpecialPay = calculateSum(data, "Special Pay");
+                //decimal currentEmployerTotalSpecialPay = calculateSum(data, "Special Pay", currentEmployer);
+                //decimal cumulativeTatalSpecialPay = totalSpecialPay - currentEmployerTotalSpecialPay;
+
+                // Define an array with all field names
+                string[] fields = new[]
+                {
+    "Basic Pay", "Stagnation Increment", "DA", "HRA", "Special Pay",
+    "Uniform Allowance", "Independent Charge Allowance", "Medical Allowance",
+    "Personal Pay", "Other Allowances", "Gross Allowance", "Income Tax",
+    "EGIS", "PT", "LIC", "Nps Deduction Amount", "Nps Recovery Amount",
+    "KGID", "GPF", "GPF Loan", "KGID Loan", "Festival Advance",
+    "Advance Pay", "HBA", "Motor Cycle Advance",
+    "Housing Development Finance Corporation", "Recovery of Over Payment",
+    "Arogya Bhagya Yojana", "Msil", "Electricity",
+    "Co-operative Society", "Gross Recovery", "Gross Deduction",
+    "Gross Salary", "Net Salary"
+};
+
+
+                foreach (var field in fields)
+                {
+                    var total = calculateSum(data, field);
+
+                    decimal currentEmployerTotal = calculateSum(data, field, currentEmployer);
+
+                    decimal cumulativeTotal = total - currentEmployerTotal;
+
+                    results[field] = (total, currentEmployerTotal, cumulativeTotal);
+                }
+
+                //foreach (var field in fields)
+                //{
+                //    var result = results[field];
+                //    //Console.WriteLine($"{field} - Total: {result.total}, Current Employer Total: {result.currentEmployerTotal}, Cumulative Total: {result.cumulativeTotal}");
+                //}
+
+
+
+
+
+
+
 
                 // Close workbook
                 workbook.Close(false);
@@ -192,8 +265,26 @@ namespace ItrCalc
             //MessageBox.Show(str.ToString());
             using (provisonalDataDialog dialog = new provisonalDataDialog())
             {
-                dialog.SetDataTable(dataTable); 
+                dialog.SetDataTable(dataTable);
                 dialog.ShowDialog();
+            }
+
+            using (provisonalDataDialog dialog = new provisonalDataDialog())
+            {
+                dialog.SetDictionary(results);
+                dialog.ShowDialog();
+            }
+        }
+
+        private decimal calculateSum(EnumerableRowCollection<DataRow> data, string paytype, string ddoNo = "")
+        {
+            if (string.IsNullOrEmpty(ddoNo))
+            {
+                return data.Sum(sal => Convert.ToDecimal(sal.Field<string>(paytype)));
+            }
+            else
+            {
+                return data.Where(row => row.Field<string>("DDO Code").Equals(ddoNo)).Sum(sal => Convert.ToDecimal(sal.Field<string>(paytype)));
             }
         }
 
@@ -265,23 +356,24 @@ namespace ItrCalc
 
         private List<string> GetMonths()
         {
-            List<string> list = new List<string>();
-            list.Add("Jan");
-            list.Add("Feb");
-            list.Add("Mar");
-            list.Add("Apr");
-            list.Add("May");
-            list.Add("June");
-            list.Add("July");
-            list.Add("Aug");
-            list.Add("Sept");
-            list.Add("Oct");
-            list.Add("Nov");
-            list.Add("Dec");
-            return list;
+            return new List<string>
+            {
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "June",
+                "July",
+                "Aug",
+                "Sept",
+                "Oct",
+                "Nov",
+                "Dec"
+            };
         }
 
-        private void importFilesToolStripMenuItem_Click(object sender, EventArgs e)
+        private void importFilesMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Excel Files (*.xls, *.xlsx)|*.xls;*.xlsx";

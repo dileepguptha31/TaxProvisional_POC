@@ -98,7 +98,7 @@
             this.importFilesToolStripMenuItem.Name = "importFilesToolStripMenuItem";
             this.importFilesToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.importFilesToolStripMenuItem.Text = "Import Files";
-            this.importFilesToolStripMenuItem.Click += new System.EventHandler(this.importFilesToolStripMenuItem_Click);
+            this.importFilesToolStripMenuItem.Click += new System.EventHandler(this.importFilesMenuItem_Click);
             // 
             // footerPanel
             // 
