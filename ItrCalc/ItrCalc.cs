@@ -112,7 +112,7 @@ namespace ItrCalc
                             dr[dtInputData.Columns[col - 1].ColumnName] = cell.Value2;
                         }
 
-                        if (dr.IsNull(0) && dr.IsNull(1) && dr.IsNull(3) && dr.IsNull(4))
+                        if ((dr.IsNull(0) && dr.IsNull(1) && dr.IsNull(3) && dr.IsNull(4)) || dr[0].Equals("Totals"))
                             continue;
 
                         dr["EntryType"] = "Received";
