@@ -98,7 +98,7 @@
             // importFilesToolStripMenuItem
             // 
             this.importFilesToolStripMenuItem.Name = "importFilesToolStripMenuItem";
-            this.importFilesToolStripMenuItem.Size = new System.Drawing.Size(170, 26);
+            this.importFilesToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.importFilesToolStripMenuItem.Text = "Import Files";
             this.importFilesToolStripMenuItem.Click += new System.EventHandler(this.importFilesMenuItem_Click);
             // 
@@ -169,6 +169,7 @@
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form1";
             this.Text = "Tax Report Generator";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.footerPanel.ResumeLayout(false);
