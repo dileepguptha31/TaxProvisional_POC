@@ -61,7 +61,7 @@ namespace ItrCalc
                     var dataInput = LoadExcelfromMicrosoftInterop(inputFile);
                     if(dataInput != null)
                     {
-                        var ProcessedfileName = txtPath.Text + "\\Processed\\" + Path.GetFileNameWithoutExtension(inputFile) + "_" + DateTime.Now.ToString("ddMMyyyy") + "." + fileExt;
+                        var ProcessedfileName = txtPath.Text + "\\Processed\\" + Path.GetFileNameWithoutExtension(inputFile) + "_" + DateTime.Now.ToString("ddMMyyyy")  + fileExt;
                         File.Move(inputFile, ProcessedfileName);
                         ComputeAndCreateFinalAggregratedOutput(dataInput, txtPath.Text + "\\OutPut");
                     }
@@ -136,6 +136,7 @@ namespace ItrCalc
                 excelApp.Quit();
                 Marshal.ReleaseComObject(excelApp);
             }
+            lblStatus.Visible = true;
             return null;
         }
         private DataTable CreateDataTableMetaData()
@@ -320,29 +321,43 @@ namespace ItrCalc
                         worksheet.Cells[row + 2, col + 1].Value = updatedProvisionalData.Rows[row][col];
                     }
                 }
+                worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
 
                 var worksheet2 = package.Workbook.Worksheets.Add("Basic Information Details");
-                var sheet2range = worksheet2.Cells["A1:F2"];
+                var sheet2range = worksheet2.Cells["A1:D2"];
                 sheet2range.Merge = true;  // Merge the cells
                 sheet2range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                sheet2range.Style.Fill.BackgroundColor.SetColor(Color.AliceBlue);
+                sheet2range.Style.Fill.BackgroundColor.SetColor(Color.LightCyan);
 
                 // Set the font size for the merged cells
                 sheet2range.Style.Font.Size = 16;  // Set the font size to 16 (or your desired size)
                 sheet2range.Style.Font.Bold = true;
+                sheet2range.Style.ShrinkToFit = true;
                 sheet2range.Value = "Basic Information for Income Tax computation As per  HRMS";
 
                 worksheet2.Cells["A3"].Value = "KGID No";
                 worksheet2.Cells["A3"].Style.Font.Bold = true;
-                worksheet2.Cells["B3"].Value = kgidno;
+                var kgidRange = worksheet2.Cells["B3:D3"];
+                kgidRange.Merge = true;  // Merge the cells
+                kgidRange.Value = kgidno;
 
                 worksheet2.Cells["A4"].Value = "Employee Name";
                 worksheet2.Cells["A4"].Style.Font.Bold = true;
-                worksheet2.Cells["B4"].Value = employeeName;
+                
+                var employeeNameRange = worksheet2.Cells["B4:D4"];
+                employeeNameRange.Merge = true;  // Merge the cells
+                employeeNameRange.Value = employeeName;
 
                 worksheet2.Cells["A5"].Value = "Designation";
                 worksheet2.Cells["A5"].Style.Font.Bold = true;
                 worksheet2.Cells["B5"].Value = designation;
+
+
+                var designationRange = worksheet2.Cells["B5:D5"];
+                designationRange.Merge = true;  // Merge the cells
+                designationRange.Value = designation;
+
+
 
                 worksheet2.Cells["A6"].Value = "PAN No";
                 worksheet2.Cells["A6"].Style.Font.Bold = true;
@@ -362,9 +377,25 @@ namespace ItrCalc
                     worksheet2.Cells[$"D{startingrow}"].Value = fieldValues.Value.cumulativeTotal;
                     startingrow = startingrow + 1;
                 }
+
+
                 var sheet2rangeBackground = worksheet2.Cells["A3:D41"];
                 sheet2rangeBackground.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                sheet2rangeBackground.Style.Fill.BackgroundColor.SetColor(Color.AntiqueWhite);
+                sheet2rangeBackground.Style.Fill.BackgroundColor.SetColor(Color.FloralWhite);
+
+                // Set border styles for the range
+                sheet2rangeBackground.Style.Border.Top.Style = ExcelBorderStyle.Thin;
+                sheet2rangeBackground.Style.Border.Bottom.Style = ExcelBorderStyle.Thin;
+                sheet2rangeBackground.Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                sheet2rangeBackground.Style.Border.Right.Style = ExcelBorderStyle.Thin;
+
+                // Set border color (optional)
+                Color borderColor = Color.Black;
+                sheet2rangeBackground.Style.Border.Top.Color.SetColor(borderColor);
+                sheet2rangeBackground.Style.Border.Bottom.Color.SetColor(borderColor);
+                sheet2rangeBackground.Style.Border.Left.Color.SetColor(borderColor);
+                sheet2rangeBackground.Style.Border.Right.Color.SetColor(borderColor);
+
                 worksheet2.Cells[worksheet.Dimension.Address].AutoFitColumns();
                 
                 // Save the file

@@ -39,27 +39,29 @@
             this.Load.Name = "Load";
             this.Load.Size = new System.Drawing.Size(90, 32);
             this.Load.TabIndex = 0;
-            this.Load.Text = "Load";
+            this.Load.Text = "Process";
             this.Load.UseVisualStyleBackColor = true;
             this.Load.Click += new System.EventHandler(this.Load_Click);
             // 
             // txtPath
             // 
-            this.txtPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtPath.Location = new System.Drawing.Point(140, 60);
+            this.txtPath.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtPath.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtPath.Location = new System.Drawing.Point(81, 60);
             this.txtPath.Name = "txtPath";
-            this.txtPath.Size = new System.Drawing.Size(252, 34);
+            this.txtPath.Size = new System.Drawing.Size(311, 27);
             this.txtPath.TabIndex = 1;
             // 
             // lblStatus
             // 
             this.lblStatus.AutoSize = true;
             this.lblStatus.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lblStatus.Location = new System.Drawing.Point(147, 136);
+            this.lblStatus.Location = new System.Drawing.Point(94, 135);
             this.lblStatus.Name = "lblStatus";
             this.lblStatus.Size = new System.Drawing.Size(57, 20);
             this.lblStatus.TabIndex = 2;
             this.lblStatus.Text = "Status";
+            this.lblStatus.Visible = false;
             // 
             // ItrCalc
             // 
