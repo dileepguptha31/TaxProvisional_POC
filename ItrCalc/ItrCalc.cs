@@ -124,6 +124,7 @@ namespace ItrCalc
                 workbook.Close(false);
                 Marshal.ReleaseComObject(workbook);
                 lblStatus.Text = lblStatus.Text + "Processed Sucess : " + Path.GetFileName(filePath);
+                lblStatus.Visible = true;
                 return dtInputData;
             }
             catch (Exception ex)
@@ -136,7 +137,6 @@ namespace ItrCalc
                 excelApp.Quit();
                 Marshal.ReleaseComObject(excelApp);
             }
-            lblStatus.Visible = true;
             return null;
         }
         private DataTable CreateDataTableMetaData()
@@ -435,10 +435,17 @@ namespace ItrCalc
                     //prepare for next row
                     lastSalaryCreditRow = provRow;
                     lastCreditedMonth = currentMonth;
+
+                    if(currentMonth == "Feb")
+                        break;
                 }
             }
             return dtPanSpecific;
         }
 
+        private void lblStatus_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

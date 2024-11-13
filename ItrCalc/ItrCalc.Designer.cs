@@ -62,6 +62,7 @@
             this.lblStatus.TabIndex = 2;
             this.lblStatus.Text = "Status";
             this.lblStatus.Visible = false;
+            this.lblStatus.Click += new System.EventHandler(this.lblStatus_Click);
             // 
             // ItrCalc
             // 
