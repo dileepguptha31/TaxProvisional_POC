@@ -76,15 +76,16 @@ namespace ItrCalc
 
         public DataTable LoadExcelfromMicrosoftInterop(string filePath)
         {
-            var dtInputData = CreateDataTableMetaData();
+            var dtInputData = new DataTable();//CreateDataTableMetaData();
 
             var excelApp = new Application();
             excelApp.Visible = false;  // Do not show Excel UI
 
+            // Open the workbook
+            Workbook workbook = excelApp.Workbooks.Open(filePath);
+
             try
             {
-                // Open the workbook
-                Workbook workbook = excelApp.Workbooks.Open(filePath);
                 Worksheet worksheet = (Worksheet)workbook.Sheets[1];  // Access the first sheet
 
                 // Get the range of used cells
@@ -103,6 +104,12 @@ namespace ItrCalc
                         {
                             dataonly = true;
                             dataHeader = row;
+                            for (int col = 1; col <= colCount; col++)
+                            {
+                                var cell = (Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row, col];
+                                dtInputData.Columns.Add(cell.Value2);
+                            }
+                            dtInputData.Columns.Add("EntryType");
                             continue;
                         }
                         DataRow dr = dtInputData.NewRow();
@@ -120,9 +127,7 @@ namespace ItrCalc
                         dtInputData.Rows.Add(dr);
                     }
                 }
-                // Close workbook
-                workbook.Close(false);
-                Marshal.ReleaseComObject(workbook);
+                
                 lblStatus.Text = lblStatus.Text + "Processed Sucess : " + Path.GetFileName(filePath);
                 lblStatus.Visible = true;
                 return dtInputData;
@@ -133,6 +138,10 @@ namespace ItrCalc
             }
             finally
             {
+                // Close workbook
+                workbook.Close(false);
+                Marshal.ReleaseComObject(workbook);
+
                 // Quit Excel application
                 excelApp.Quit();
                 Marshal.ReleaseComObject(excelApp);
