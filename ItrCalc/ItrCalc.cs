@@ -93,7 +93,10 @@ namespace ItrCalc
                 int rowCount = usedRange.Rows.Count;
                 int colCount = usedRange.Columns.Count;
                 bool dataonly = false;
+                bool addSalaryType = false;
+                bool addDDONumber = false;
                 int dataHeader;
+                string rootDDO = "";
                 // Loop through rows and columns
                 for (int row = 1; row <= rowCount; row++)
                 {
@@ -104,12 +107,35 @@ namespace ItrCalc
                         {
                             dataonly = true;
                             dataHeader = row;
+
+                            var ddoCell = (Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row-1, 1];
+                            if (ddoCell != null && !String.IsNullOrEmpty(ddoCell.Value2.ToString()))
+                            {
+                                if(ddoCell.Value2.ToString().Contains("DDO Code"))
+                                {
+                                    rootDDO= ddoCell.Value2.ToString().Split(':')[1];
+                                    rootDDO = rootDDO.Trim();
+                                }
+                            }
+
                             for (int col = 1; col <= colCount; col++)
                             {
                                 var cell = (Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row, col];
                                 dtInputData.Columns.Add(cell.Value2);
                             }
                             dtInputData.Columns.Add("EntryType");
+
+                            if (!dtInputData.Columns.Contains("Type")) { 
+                                dtInputData.Columns.Add("Type");
+                                addSalaryType = true;
+                            }
+
+                            if(!dtInputData.Columns.Contains("DDO Code"))
+                            {
+                                dtInputData.Columns.Add("DDO Code");
+                                addDDONumber = true;
+                            }
+                            
                             continue;
                         }
                         DataRow dr = dtInputData.NewRow();
@@ -117,6 +143,16 @@ namespace ItrCalc
                         {
                             var cell = (Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row, col];
                             dr[dtInputData.Columns[col - 1].ColumnName] = cell.Value2;
+                        }
+
+                        if(addSalaryType)
+                        {
+                            dr["Type"] = "SALARY";
+                        }
+
+                        if (string.IsNullOrEmpty(dr["DDO Code"].ToString()))
+                        {
+                            dr["DDO Code"] = rootDDO;
                         }
 
                         if ((dr.IsNull(0) && dr.IsNull(1) && dr.IsNull(3) && dr.IsNull(4)) || dr[0].Equals("Totals"))
