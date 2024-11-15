@@ -27,42 +27,43 @@ namespace ItrCalc
         {
             
             var errorCount = 0;
-            var filesList = Directory.GetFiles(txtPath.Text, "*.xls*");
+            var filesList = Directory.GetFiles(txtPath.Text, "*.xls*", SearchOption.AllDirectories);
 
 
-            if (!Directory.Exists(txtPath.Text + "\\Processed"))
+            if (!Directory.Exists(txtoutput.Text + "\\Processed"))
             {
-                Directory.CreateDirectory(txtPath.Text + "\\Processed");
+                Directory.CreateDirectory(txtoutput.Text + "\\Processed");
             }
-            if (!Directory.Exists(txtPath.Text + "\\Errors"))
+            if (!Directory.Exists(txtoutput.Text + "\\Errors"))
             {
-                Directory.CreateDirectory(txtPath.Text + "\\Errors");
+                Directory.CreateDirectory(txtoutput.Text + "\\Errors");
             }
-            if (!Directory.Exists(txtPath.Text + "\\OutPut"))
+            if (!Directory.Exists(txtoutput.Text + "\\OutPut"))
             {
-                Directory.CreateDirectory(txtPath.Text + "\\OutPut");                
+                Directory.CreateDirectory(txtoutput.Text + "\\OutPut");                
             }
-            if (!Directory.Exists(txtPath.Text + "\\OutPut\\Consolidated"))
+            if (!Directory.Exists(txtoutput.Text + "\\OutPut\\Consolidated"))
             {
-                Directory.CreateDirectory(txtPath.Text + "\\OutPut\\Consolidated");
+                Directory.CreateDirectory(txtoutput.Text + "\\OutPut\\Consolidated");
             }
             int i = 0;
             var noFiles = filesList.Count();
             foreach (string inputFile in filesList)
             {
+                processingStatus.Text = $"Processing  {i}";
                 var fileExt = Path.GetExtension(inputFile);
                 filestatus.Text = $"Working on File {Path.GetFileNameWithoutExtension(inputFile)}";
                 var dataInput = LoadExcelfromMicrosoftInterop(inputFile);
                 if (dataInput != null)
                 {
-                    var ProcessedfileName = txtPath.Text + "\\Processed\\" + Path.GetFileNameWithoutExtension(inputFile) + "_" + DateTime.Now.ToString("ddMMyyyy") + fileExt;
+                    var ProcessedfileName = txtoutput.Text + "\\Processed\\" + Path.GetFileNameWithoutExtension(inputFile) + fileExt;
                     File.Move(inputFile, ProcessedfileName);
-                    ComputeAndCreateFinalAggregratedOutput(dataInput, txtPath.Text + "\\OutPut");
+                    ComputeAndCreateFinalAggregratedOutput(dataInput, txtoutput.Text + "\\OutPut");
                 }
                 else
                 {
                     errorCount = errorCount + 1;
-                    File.Move(inputFile, txtPath.Text + "\\Errors");
+                    File.Move(inputFile, txtoutput.Text + "\\Errors");
                 }
                 i = i + 1;
                 filestatus.Text = $"File Completed :{Path.GetFileNameWithoutExtension(inputFile)}";                
@@ -78,7 +79,8 @@ namespace ItrCalc
             var excelApp = new Application();
             excelApp.Visible = false;  // Do not show Excel UI
 
-            Microsoft.Office.Interop.Excel.Workbook workbook = excelApp.Workbooks.Open(filePath);
+            Microsoft.Office.Interop.Excel.Workbook workbook = excelApp.Workbooks.Open(filePath,
+                                                                ReadOnly: true);
             try
             {
                 // Open the workbook
@@ -137,7 +139,20 @@ namespace ItrCalc
                         for (int col = 1; col <= colCount; col++)
                         {
                             var cell = (Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row, col];
-                            dr[dtInputData.Columns[col - 1].ColumnName.Trim()] = cell.Value2;
+                            var cellValue = cell.Value2;
+                            if(cellValue!=null && dtInputData.Columns[col - 1].ColumnName.Trim() == "Paybill Generation Date")
+                            {
+                                if ( double.TryParse(cellValue.ToString(), out double oaDate))
+                                {
+                                    // If it's a serial number, convert it to DateTime
+                                    DateTime dateValue = DateTime.FromOADate(oaDate);
+                                    dr[dtInputData.Columns[col - 1].ColumnName.Trim()] = dateValue.ToShortDateString();
+                                }
+                            }
+                            else
+                            { 
+                                dr[dtInputData.Columns[col - 1].ColumnName.Trim()] = cellValue;
+                            }
                         }
 
                         if (addSalaryType)
@@ -186,10 +201,10 @@ namespace ItrCalc
                 "Mar",
                 "Apr",
                 "May",
-                "June",
-                "July",
+                "Jun",
+                "Jul",
                 "Aug",
-                "Sept",
+                "Sep",
                 "Oct",
                 "Nov",
                 "Dec"
@@ -229,7 +244,7 @@ namespace ItrCalc
             var cnsFile = fileoutputPath + "\\Consolidated\\ConsolidatedData.csv";
             if (!File.Exists(cnsFile))
             {
-                File.WriteAllText(cnsFile, "S No.,KGID No,From Month,To Month,Year,Employee Name,Designation,PAN No,Gross Salary from Current DDO,Gross Salary (Provisional Considered ),Gross Salary (From Other DDO's ),Basic Pay,Stagnation Increment,DA,HRA,Uniform Allowance,Independent Charge Allowance,Medical Allowance,Other Allowances,Income Tax from Current DDO,Income Tax from Other DDO,EGIS,PT,LIC,Nps Deduction Amount,KGID,GPF,HBA,Housing Development Finance Corporation,Arogya Bhagya Yojana");
+                File.WriteAllText(cnsFile, "S No.,DDO Code,KGID No,From Month,To Month,Year,Employee Name,Designation,PAN No,Gross Salary from Current DDO,Gross Salary (Provisional Considered ),Gross Salary (From Other DDO's ),Basic Pay,Stagnation Increment,DA,HRA,Uniform Allowance,Independent Charge Allowance,Medical Allowance,Other Allowances,Income Tax from Current DDO,Income Tax from Other DDO,EGIS,PT,LIC,Nps Deduction Amount,KGID,GPF,HBA,Housing Development Finance Corporation,Arogya Bhagya Yojana");
             }
                 
             var results = new Dictionary<string, (decimal total, decimal currentEmployerTotal, decimal cumulativeTotal)>();
@@ -283,6 +298,7 @@ namespace ItrCalc
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.Commercial;
             using (var package = new ExcelPackage())
             {
+                
                 var worksheet = package.Workbook.Worksheets.Add("HRMS Data Input");
 
 
@@ -400,83 +416,84 @@ namespace ItrCalc
             var lineNo = File.ReadAllLines(cnsFile).Length;
 
             StringBuilder str = new StringBuilder();
-            string[] strdata = new string[30];
+            string[] strdata = new string[31];
             
             strdata[0] = lineNo.ToString();
-            strdata[1] = kgidno.ToString();
-            strdata[2] = fromMonth.ToString();
-            strdata[3] = toMonth.ToString();
-            strdata[4] = firstData["Year"].ToString();
-            strdata[5] = employeeName.ToString();
-            strdata[6] = designation.ToString();
-            strdata[7] = panNo.ToString();
+            strdata[1] = currentEmployer.ToString();
+            strdata[2] = kgidno.ToString();
+            strdata[3] = fromMonth.ToString();
+            strdata[4] = toMonth.ToString();
+            strdata[5] = firstData["Year"].ToString();
+            strdata[6] = employeeName.ToString();
+            strdata[7] = designation.ToString();
+            strdata[8] = panNo.ToString();
             var grossSalaryfromCurrentDDo = data.Where(row => row.Field<string>("DDO Code").Equals(currentEmployer) && row.Field<string>("EntryType") == "Received")
                 .Sum(sal => Convert.ToDecimal(sal.Field<string>("Gross Salary")));
 
-            strdata[8] = grossSalaryfromCurrentDDo.ToString();
+            strdata[9] = grossSalaryfromCurrentDDo.ToString();
 
             var grossSalaryfromCurrentDDoprovisional = data.Where(row => row.Field<string>("DDO Code").Equals(currentEmployer) && row.Field<string>("EntryType") != "Received")
                 .Sum(sal => Convert.ToDecimal(sal.Field<string>("Gross Salary")));
-            strdata[9] = grossSalaryfromCurrentDDoprovisional.ToString();
+            strdata[10] = grossSalaryfromCurrentDDoprovisional.ToString();
 
             results.TryGetValue("Gross Salary", out var totalsalary);
-            strdata[10] = (Convert.ToInt64(totalsalary.total) - (Convert.ToInt64(grossSalaryfromCurrentDDoprovisional) +Convert.ToInt64(grossSalaryfromCurrentDDoprovisional))).ToString();
+            strdata[11] = (Convert.ToInt64(totalsalary.total) - (Convert.ToInt64(grossSalaryfromCurrentDDo) +Convert.ToInt64(grossSalaryfromCurrentDDoprovisional))).ToString();
             
             results.TryGetValue("Basic Pay", out var baseicpay);
-            strdata[11] = baseicpay.total.ToString();
+            strdata[12] = baseicpay.total.ToString();
 
             results.TryGetValue("Stagnation Increment", out var StagnationIncrement);
-            strdata[12] = StagnationIncrement.total.ToString();
+            strdata[13] = StagnationIncrement.total.ToString();
 
             results.TryGetValue("DA", out var DA);
-            strdata[13] = DA.total.ToString();
+            strdata[14] = DA.total.ToString();
 
             results.TryGetValue("HRA", out var HRA);
-            strdata[14] = HRA.total.ToString();
+            strdata[15] = HRA.total.ToString();
 
             results.TryGetValue("Uniform Allowance", out var UniformAllowance);
-            strdata[15] = UniformAllowance.total.ToString();
+            strdata[16] = UniformAllowance.total.ToString();
 
             results.TryGetValue("Independent Charge Allowance", out var IndependentChargeAllowance);
-            strdata[16] = IndependentChargeAllowance.total.ToString();
+            strdata[17] = IndependentChargeAllowance.total.ToString();
 
             results.TryGetValue("Medical Allowance", out var MedicalAllowance);
-            strdata[17] = MedicalAllowance.total.ToString();
+            strdata[18] = MedicalAllowance.total.ToString();
 
             results.TryGetValue("Other Allowances", out var OtherAllowances);
-            strdata[18] = OtherAllowances.total.ToString();
+            strdata[19] = OtherAllowances.total.ToString();
 
             results.TryGetValue("Income Tax", out var incometax);
-            strdata[19] = incometax.currentEmployerTotal.ToString();
+            strdata[20] = incometax.currentEmployerTotal.ToString();
 
-            strdata[20] = incometax.cumulativeTotal.ToString();
+            strdata[21] = incometax.cumulativeTotal.ToString();
 
             results.TryGetValue("EGIS", out var EGIS);
-            strdata[21] = EGIS.total.ToString();
+            strdata[22] = EGIS.total.ToString();
 
             results.TryGetValue("PT", out var PT);
-            strdata[22] = PT.total.ToString();
+            strdata[23] = PT.total.ToString();
 
             results.TryGetValue("LIC", out var LIC);
-            strdata[23] = LIC.total.ToString();
+            strdata[24] = LIC.total.ToString();
 
             results.TryGetValue("Nps Deduction Amount", out var NpsDeductionAmount);
-            strdata[24] = NpsDeductionAmount.total.ToString();
+            strdata[25] = NpsDeductionAmount.total.ToString();
 
             results.TryGetValue("KGID", out var KGID);
-            strdata[25] = KGID.total.ToString();
+            strdata[26] = KGID.total.ToString();
 
             results.TryGetValue("GPF", out var GPF);
-            strdata[26] = GPF.total.ToString();
+            strdata[27] = GPF.total.ToString();
 
             results.TryGetValue("HBA", out var HBA);
-            strdata[27] = HBA.total.ToString();
+            strdata[28] = HBA.total.ToString();
 
             results.TryGetValue("Housing Development Finance Corporation", out var HousingDevelopmentFinanceCorporation);
-            strdata[28] = HousingDevelopmentFinanceCorporation.total.ToString();
+            strdata[29] = HousingDevelopmentFinanceCorporation.total.ToString();
 
             results.TryGetValue("Arogya Bhagya Yojana", out var ArogyaBhagyaYojana);
-            strdata[29] = ArogyaBhagyaYojana.total.ToString();
+            strdata[30] = ArogyaBhagyaYojana.total.ToString();
 
             string finaldata = string.Join(",", strdata);
 
@@ -496,7 +513,7 @@ namespace ItrCalc
             {
                 var lastSalaryCreditRow = receivedSalaryRows.Last();
 
-                var lastCreditedMonth = lastSalaryCreditRow["Month"].ToString();
+                var lastCreditedMonth = lastSalaryCreditRow["Month"].ToString().Substring(0, 3);
 
                 var months = GetMonths();
 
@@ -517,6 +534,10 @@ namespace ItrCalc
                     provRow["S No."] = $"{dtPanSpecific.Rows.Count + 1}.Provisional";
                     provRow["Month"] = currentMonth;
                     provRow["EntryType"] = "Provisional";
+                    if (provRow["Month"] == "Jan" || provRow["Month"] == "Feb")
+                    {
+                        provRow["Year"] = "2025";
+                    }
                     dtPanSpecific.Rows.Add(provRow);
 
                     //prepare for next row
@@ -545,7 +566,7 @@ namespace ItrCalc
             }
             else
             {
-                var filesList = Directory.GetFiles(txtPath.Text, "*.xls*");
+                var filesList = Directory.GetFiles(txtPath.Text, "*.xls*",SearchOption.AllDirectories);
                 if (filesList.Count() == 0)
                 {
                     MessageBox.Show("No files to Process");

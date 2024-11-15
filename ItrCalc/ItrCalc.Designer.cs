@@ -41,6 +41,7 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.tstripstatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.filestatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.processingStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.stsstrip.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -104,7 +105,7 @@
             this.cmbProvisionalMonths.FormattingEnabled = true;
             this.cmbProvisionalMonths.Items.AddRange(new object[] {
             "Aug",
-            "Sept",
+            "Sep",
             "Oct",
             "Nov",
             "Dec"});
@@ -139,7 +140,8 @@
             this.stsstrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.tstripstatus,
-            this.filestatus});
+            this.filestatus,
+            this.processingStatus});
             this.stsstrip.Location = new System.Drawing.Point(0, 423);
             this.stsstrip.Name = "stsstrip";
             this.stsstrip.Size = new System.Drawing.Size(619, 22);
@@ -148,17 +150,22 @@
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 20);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(0, 16);
             // 
             // tstripstatus
             // 
             this.tstripstatus.Name = "tstripstatus";
-            this.tstripstatus.Size = new System.Drawing.Size(0, 20);
+            this.tstripstatus.Size = new System.Drawing.Size(0, 16);
             // 
             // filestatus
             // 
             this.filestatus.Name = "filestatus";
             this.filestatus.Size = new System.Drawing.Size(0, 16);
+            // 
+            // processingStatus
+            // 
+            this.processingStatus.Name = "processingStatus";
+            this.processingStatus.Size = new System.Drawing.Size(0, 16);
             // 
             // ItrCalc
             // 
@@ -202,5 +209,6 @@
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.ToolStripStatusLabel tstripstatus;
         private System.Windows.Forms.ToolStripStatusLabel filestatus;
+        private System.Windows.Forms.ToolStripStatusLabel processingStatus;
     }
 }
