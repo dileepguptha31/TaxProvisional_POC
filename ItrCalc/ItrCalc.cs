@@ -1,31 +1,47 @@
-﻿using Microsoft.Office.Interop.Excel;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.Office.Interop.Excel;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Application = Microsoft.Office.Interop.Excel.Application;
 using Color = System.Drawing.Color;
 using DataTable = System.Data.DataTable;
+using Timer = System.Windows.Forms.Timer;
 using Worksheet = Microsoft.Office.Interop.Excel.Worksheet;
 
 namespace ItrCalc
 {
     public partial class ItrCalc : Form
     {
+        private Timer timer;
+        private int elapsedTime;
         public ItrCalc()
         {
             InitializeComponent();
+            timer = new System.Windows.Forms.Timer();
+            timer.Interval = 1000; // Set the timer interval to 1 second (1000 milliseconds)
+            timer.Tick += Timer_Tick;
         }
-
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            elapsedTime++;
+            label4.Text = $"Time: {elapsedTime / 60}";
+        }
         private void Load_Click(object sender, EventArgs e)
         {
-            
+            label4.Visible = true;
+            elapsedTime = 0; // Reset elapsed time
+            timer.Start(); // Start the timer
             var errorCount = 0;
             var filesList = Directory.GetFiles(txtPath.Text, "*.xls*", SearchOption.AllDirectories);
 
@@ -46,6 +62,7 @@ namespace ItrCalc
             {
                 Directory.CreateDirectory(txtoutput.Text + "\\OutPut\\Consolidated");
             }
+           
             int i = 0;
             var noFiles = filesList.Count();
             foreach (string inputFile in filesList)
@@ -62,14 +79,16 @@ namespace ItrCalc
                 }
                 else
                 {
+                    KillExcelProcesses();
                     errorCount = errorCount + 1;
                     File.Move(inputFile, txtoutput.Text + "\\Errors");
                 }
                 i = i + 1;
                 filestatus.Text = $"File Completed :{Path.GetFileNameWithoutExtension(inputFile)}";                
             }
-
+            timer.Stop();
             MessageBox.Show("Completed");
+            
         }
 
         public DataTable LoadExcelfromMicrosoftInterop(string filePath)
@@ -81,12 +100,10 @@ namespace ItrCalc
 
             Microsoft.Office.Interop.Excel.Workbook workbook = excelApp.Workbooks.Open(filePath,
                                                                 ReadOnly: true);
+            Worksheet worksheet = (Worksheet)workbook.Sheets[1];
             try
             {
-                // Open the workbook
-               
-                Worksheet worksheet = (Worksheet)workbook.Sheets[1];  // Access the first sheet
-
+                
                 // Get the range of used cells
                 Range usedRange = worksheet.UsedRange;
                 int rowCount = usedRange.Rows.Count;
@@ -185,9 +202,10 @@ namespace ItrCalc
             finally
             {
                 workbook.Close(false);
-                Marshal.ReleaseComObject(workbook);
-                // Quit Excel application
                 excelApp.Quit();
+
+                Marshal.ReleaseComObject(worksheet);
+                Marshal.ReleaseComObject(workbook);
                 Marshal.ReleaseComObject(excelApp);
             }
             return null;
@@ -594,6 +612,29 @@ namespace ItrCalc
                 lstboxFiles.Visible = true;
                 btnProcess.Visible = true;
             }
+        }
+
+        private void killOpenExcelToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            KillExcelProcesses();
+        }
+        public void KillExcelProcesses()
+        {
+            // Get all processes with the name "EXCEL"
+            Process[] excelProcesses = Process.GetProcessesByName("EXCEL");
+
+            // Loop through each process and kill it
+            foreach (Process process in excelProcesses)
+            {
+                process.Kill();
+            }
+
+            MessageBox.Show("Completed");
+        }
+
+        private void ItrCalc_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

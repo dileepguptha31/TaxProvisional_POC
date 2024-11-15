@@ -42,7 +42,12 @@
             this.tstripstatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.filestatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.processingStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.menuStrip1 = new System.Windows.Forms.MenuStrip();
+            this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.killOpenExcelToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.label4 = new System.Windows.Forms.Label();
             this.stsstrip.SuspendLayout();
+            this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // btnProcess
@@ -167,12 +172,50 @@
             this.processingStatus.Name = "processingStatus";
             this.processingStatus.Size = new System.Drawing.Size(0, 16);
             // 
+            // menuStrip1
+            // 
+            this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileToolStripMenuItem});
+            this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+            this.menuStrip1.Name = "menuStrip1";
+            this.menuStrip1.Size = new System.Drawing.Size(619, 28);
+            this.menuStrip1.TabIndex = 12;
+            this.menuStrip1.Text = "menuStrip1";
+            // 
+            // fileToolStripMenuItem
+            // 
+            this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.killOpenExcelToolStripMenuItem});
+            this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
+            this.fileToolStripMenuItem.Text = "File";
+            // 
+            // killOpenExcelToolStripMenuItem
+            // 
+            this.killOpenExcelToolStripMenuItem.Name = "killOpenExcelToolStripMenuItem";
+            this.killOpenExcelToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.killOpenExcelToolStripMenuItem.Text = "Kill Open Excel";
+            this.killOpenExcelToolStripMenuItem.Click += new System.EventHandler(this.killOpenExcelToolStripMenuItem_Click);
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(290, 241);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(44, 16);
+            this.label4.TabIndex = 13;
+            this.label4.Text = "label4";
+            this.label4.Visible = false;
+            // 
             // ItrCalc
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(619, 445);
+            this.Controls.Add(this.label4);
             this.Controls.Add(this.stsstrip);
+            this.Controls.Add(this.menuStrip1);
             this.Controls.Add(this.lstboxFiles);
             this.Controls.Add(this.btnloadfiles);
             this.Controls.Add(this.cmbProvisionalMonths);
@@ -182,13 +225,17 @@
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtPath);
             this.Controls.Add(this.btnProcess);
+            this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "ItrCalc";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "ItrCalc";
+            this.Load += new System.EventHandler(this.ItrCalc_Load);
             this.stsstrip.ResumeLayout(false);
             this.stsstrip.PerformLayout();
+            this.menuStrip1.ResumeLayout(false);
+            this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -210,5 +257,9 @@
         private System.Windows.Forms.ToolStripStatusLabel tstripstatus;
         private System.Windows.Forms.ToolStripStatusLabel filestatus;
         private System.Windows.Forms.ToolStripStatusLabel processingStatus;
+        private System.Windows.Forms.MenuStrip menuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem killOpenExcelToolStripMenuItem;
+        private System.Windows.Forms.Label label4;
     }
 }
