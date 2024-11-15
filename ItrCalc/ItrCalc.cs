@@ -1,20 +1,18 @@
-﻿using System;
+﻿using Microsoft.Office.Interop.Excel;
+using OfficeOpenXml;
+using OfficeOpenXml.Style;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Microsoft.Office.Interop.Excel;
-using NPOI.SS.Formula.Functions;
-using OfficeOpenXml;
-using OfficeOpenXml.Style;
 using Application = Microsoft.Office.Interop.Excel.Application;
+using Color = System.Drawing.Color;
 using DataTable = System.Data.DataTable;
+using Worksheet = Microsoft.Office.Interop.Excel.Worksheet;
 
 namespace ItrCalc
 {
@@ -27,65 +25,64 @@ namespace ItrCalc
 
         private void Load_Click(object sender, EventArgs e)
         {
+            
             var errorCount = 0;
-            if (string.IsNullOrEmpty(txtPath.Text))
-            {
-                MessageBox.Show("No Folder Path Selected or No files to Process");
-            }
-            else
-            {
-                var filesList = Directory.GetFiles(txtPath.Text);
-                if (filesList.Count() == 0)
-                {
-                    MessageBox.Show("No files to Process");
-                    return;
-                }
+            var filesList = Directory.GetFiles(txtPath.Text, "*.xls*");
 
-                if(!Directory.Exists(txtPath.Text + "\\Processed"))
-                {
-                    Directory.CreateDirectory(txtPath.Text + "\\Processed");
-                }
-                if (!Directory.Exists(txtPath.Text + "\\Errors"))
-                {
-                    Directory.CreateDirectory(txtPath.Text + "\\Errors");
-                }
-                if (!Directory.Exists(txtPath.Text + "\\OutPut"))
-                {
-                    Directory.CreateDirectory(txtPath.Text + "\\OutPut");
-                }
 
-                var noFiles = filesList.Count();
-                foreach (string inputFile in filesList)
-                {
-                    var fileExt = Path.GetExtension(inputFile);
-                    var dataInput = LoadExcelfromMicrosoftInterop(inputFile);
-                    if(dataInput != null)
-                    {
-                        var ProcessedfileName = txtPath.Text + "\\Processed\\" + Path.GetFileNameWithoutExtension(inputFile) + "_" + DateTime.Now.ToString("ddMMyyyy")  + fileExt;
-                        File.Move(inputFile, ProcessedfileName);
-                        ComputeAndCreateFinalAggregratedOutput(dataInput, txtPath.Text + "\\OutPut");
-                    }
-                    else
-                    {
-                        errorCount = errorCount + 1;
-                        File.Move(inputFile, txtPath.Text + "\\Errors");
-                    }
-                }
+            if (!Directory.Exists(txtPath.Text + "\\Processed"))
+            {
+                Directory.CreateDirectory(txtPath.Text + "\\Processed");
             }
+            if (!Directory.Exists(txtPath.Text + "\\Errors"))
+            {
+                Directory.CreateDirectory(txtPath.Text + "\\Errors");
+            }
+            if (!Directory.Exists(txtPath.Text + "\\OutPut"))
+            {
+                Directory.CreateDirectory(txtPath.Text + "\\OutPut");                
+            }
+            if (!Directory.Exists(txtPath.Text + "\\OutPut\\Consolidated"))
+            {
+                Directory.CreateDirectory(txtPath.Text + "\\OutPut\\Consolidated");
+            }
+            int i = 0;
+            var noFiles = filesList.Count();
+            foreach (string inputFile in filesList)
+            {
+                var fileExt = Path.GetExtension(inputFile);
+                filestatus.Text = $"Working on File {Path.GetFileNameWithoutExtension(inputFile)}";
+                var dataInput = LoadExcelfromMicrosoftInterop(inputFile);
+                if (dataInput != null)
+                {
+                    var ProcessedfileName = txtPath.Text + "\\Processed\\" + Path.GetFileNameWithoutExtension(inputFile) + "_" + DateTime.Now.ToString("ddMMyyyy") + fileExt;
+                    File.Move(inputFile, ProcessedfileName);
+                    ComputeAndCreateFinalAggregratedOutput(dataInput, txtPath.Text + "\\OutPut");
+                }
+                else
+                {
+                    errorCount = errorCount + 1;
+                    File.Move(inputFile, txtPath.Text + "\\Errors");
+                }
+                i = i + 1;
+                filestatus.Text = $"File Completed :{Path.GetFileNameWithoutExtension(inputFile)}";                
+            }
+
+            MessageBox.Show("Completed");
         }
 
         public DataTable LoadExcelfromMicrosoftInterop(string filePath)
         {
-            var dtInputData = new DataTable();//CreateDataTableMetaData();
+            var dtInputData = new DataTable();
 
             var excelApp = new Application();
             excelApp.Visible = false;  // Do not show Excel UI
 
-            // Open the workbook
-            Workbook workbook = excelApp.Workbooks.Open(filePath);
-
+            Microsoft.Office.Interop.Excel.Workbook workbook = excelApp.Workbooks.Open(filePath);
             try
             {
+                // Open the workbook
+               
                 Worksheet worksheet = (Worksheet)workbook.Sheets[1];  // Access the first sheet
 
                 // Get the range of used cells
@@ -100,151 +97,86 @@ namespace ItrCalc
                 // Loop through rows and columns
                 for (int row = 1; row <= rowCount; row++)
                 {
-
+                    tstripstatus.Text = $"Reading Row : {row}";
                     if (dataonly || ((Range)usedRange.Cells[row, 1]).Value2 == "S No.")
                     {
                         if (!dataonly)
                         {
                             dataonly = true;
                             dataHeader = row;
-
-                            var ddoCell = (Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row-1, 1];
+                            var ddoCell = (Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row - 1, 1];
                             if (ddoCell != null && !String.IsNullOrEmpty(ddoCell.Value2.ToString()))
                             {
-                                if(ddoCell.Value2.ToString().Contains("DDO Code"))
+                                if (ddoCell.Value2.ToString().Contains("DDO Code"))
                                 {
-                                    rootDDO= ddoCell.Value2.ToString().Split(':')[1];
+                                    rootDDO = ddoCell.Value2.ToString().Split(':')[1];
                                     rootDDO = rootDDO.Trim();
                                 }
                             }
-
                             for (int col = 1; col <= colCount; col++)
                             {
-                                var cell = (Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row, col];
-                                dtInputData.Columns.Add(cell.Value2);
+                                var cell = (Range)usedRange.Cells[row, col];
+                                dtInputData.Columns.Add(cell.Value2.Trim());
                             }
                             dtInputData.Columns.Add("EntryType");
 
-                            if (!dtInputData.Columns.Contains("Type")) { 
+                            if (!dtInputData.Columns.Contains("Type"))
+                            {
                                 dtInputData.Columns.Add("Type");
                                 addSalaryType = true;
                             }
 
-                            if(!dtInputData.Columns.Contains("DDO Code"))
+                            if (!dtInputData.Columns.Contains("DDO Code"))
                             {
                                 dtInputData.Columns.Add("DDO Code");
                                 addDDONumber = true;
                             }
-                            
                             continue;
                         }
                         DataRow dr = dtInputData.NewRow();
                         for (int col = 1; col <= colCount; col++)
                         {
                             var cell = (Microsoft.Office.Interop.Excel.Range)usedRange.Cells[row, col];
-                            dr[dtInputData.Columns[col - 1].ColumnName] = cell.Value2;
+                            dr[dtInputData.Columns[col - 1].ColumnName.Trim()] = cell.Value2;
                         }
 
-                        if(addSalaryType)
+                        if (addSalaryType)
                         {
                             dr["Type"] = "SALARY";
                         }
 
-                        if (string.IsNullOrEmpty(dr["DDO Code"].ToString()))
+                        if (addDDONumber)
                         {
                             dr["DDO Code"] = rootDDO;
                         }
 
+                        dr["EntryType"] = "Received";
+
                         if ((dr.IsNull(0) && dr.IsNull(1) && dr.IsNull(3) && dr.IsNull(4)) || dr[0].Equals("Totals"))
                             continue;
 
-                        dr["EntryType"] = "Received";
+                        
 
                         dtInputData.Rows.Add(dr);
                     }
                 }
-                
-                lblStatus.Text = lblStatus.Text + "Processed Sucess : " + Path.GetFileName(filePath);
-                lblStatus.Visible = true;
+                tstripstatus.Text = $"File Reading Completed";
                 return dtInputData;
             }
             catch (Exception ex)
             {
-                lblStatus.Text = lblStatus.Text + "Error occurred " + Path.GetFileName(filePath);
+                
             }
             finally
             {
-                // Close workbook
                 workbook.Close(false);
                 Marshal.ReleaseComObject(workbook);
-
                 // Quit Excel application
                 excelApp.Quit();
                 Marshal.ReleaseComObject(excelApp);
             }
             return null;
         }
-        private DataTable CreateDataTableMetaData()
-        {
-            DataTable dt = new DataTable();
-            dt.Columns.Add("S No.");
-            dt.Columns.Add("KGID No");
-            dt.Columns.Add("Type");
-            dt.Columns.Add("Month");
-            dt.Columns.Add("Year");
-            dt.Columns.Add("Paybill Generation Date");
-            dt.Columns.Add("DDO Code");
-            dt.Columns.Add("Paybill NO");
-            dt.Columns.Add("Token No");
-            dt.Columns.Add("Employee Name");
-            dt.Columns.Add("Designation");
-            dt.Columns.Add("Metal No");
-            dt.Columns.Add("PAN No");
-            dt.Columns.Add("TAN No");
-            dt.Columns.Add("PayScale");
-            dt.Columns.Add("Bill Unit No");
-            dt.Columns.Add("Basic Pay");
-            dt.Columns.Add("Stagnation Increment");
-            dt.Columns.Add("DA");
-            dt.Columns.Add("HRA");
-            dt.Columns.Add("Special Pay");
-            dt.Columns.Add("Uniform Allowance");
-            dt.Columns.Add("Independent Charge Allowance");
-            dt.Columns.Add("Medical Allowance");
-            dt.Columns.Add("Personal Pay");
-            dt.Columns.Add("Other Allowances");
-            dt.Columns.Add("Gross Allowance");
-            dt.Columns.Add("Income Tax");
-            dt.Columns.Add("EGIS");
-            dt.Columns.Add("PT");
-            dt.Columns.Add("LIC");
-            dt.Columns.Add("Nps Deduction Amount");
-            dt.Columns.Add("Nps Recovery Amount");
-            dt.Columns.Add("KGID");
-            dt.Columns.Add("GPF");
-            dt.Columns.Add("GPF Loan");
-            dt.Columns.Add("KGID Loan");
-            dt.Columns.Add("Festival Advance");
-            dt.Columns.Add("Advance Pay");
-            dt.Columns.Add("HBA");
-            dt.Columns.Add("Motor Cycle Advance");
-            dt.Columns.Add("Housing Development Finance Corporation");
-            dt.Columns.Add("Recovery of Over Payment");
-            dt.Columns.Add("Arogya Bhagya Yojana");
-            dt.Columns.Add("Msil");
-            dt.Columns.Add("Electricity");
-            dt.Columns.Add("Co-operative Society");
-            dt.Columns.Add("Gross Recovery");
-            dt.Columns.Add("Gross Deduction");
-            dt.Columns.Add("Gross Salary");
-            dt.Columns.Add("Net Salary");
-            dt.Columns.Add("Bank A/C No");
-            dt.Columns.Add("Name Of The Bank");
-            dt.Columns.Add("Name Of The Bank Branch");
-            dt.Columns.Add("EntryType");
-            return dt;
-        }
-
         private List<string> GetMonths()
         {
             return new List<string>
@@ -265,22 +197,24 @@ namespace ItrCalc
         }
         private bool ComputeAndCreateFinalAggregratedOutput(DataTable dtInputData, string fileoutpath)
         {
-
+            
             var distinctPanNo = dtInputData.AsEnumerable().Select(x => x.Field<string>("PAN No")).Distinct().ToList();
 
             foreach (var panNo in distinctPanNo) 
             {
+                tstripstatus.Text = $"Started Processing Pan No :{panNo}";
                 var dtPanSpecific = dtInputData.AsEnumerable().Where(x => x.Field<string>("PAN No") == panNo).CopyToDataTable();
 
                 var updatedProvisionalData = UpdateProvisionalData(dtPanSpecific);
 
                 AggregratedOutput(updatedProvisionalData, fileoutpath);
+                tstripstatus.Text = $"Processing Pan No :{panNo} Completed";
             }
 
             return true;
         }
         private decimal calculateSum(EnumerableRowCollection<DataRow> data, string paytype, string ddoNo = "")
-        {
+        {           
             if (string.IsNullOrEmpty(ddoNo))
             {
                 return data.Sum(sal => Convert.ToDecimal(sal.Field<string>(paytype)));
@@ -292,17 +226,25 @@ namespace ItrCalc
         }
         private void AggregratedOutput(DataTable updatedProvisionalData,string fileoutputPath)
         {
+            var cnsFile = fileoutputPath + "\\Consolidated\\ConsolidatedData.csv";
+            if (!File.Exists(cnsFile))
+            {
+                File.WriteAllText(cnsFile, "S No.,KGID No,From Month,To Month,Year,Employee Name,Designation,PAN No,Gross Salary from Current DDO,Gross Salary (Provisional Considered ),Gross Salary (From Other DDO's ),Basic Pay,Stagnation Increment,DA,HRA,Uniform Allowance,Independent Charge Allowance,Medical Allowance,Other Allowances,Income Tax from Current DDO,Income Tax from Other DDO,EGIS,PT,LIC,Nps Deduction Amount,KGID,GPF,HBA,Housing Development Finance Corporation,Arogya Bhagya Yojana");
+            }
+                
             var results = new Dictionary<string, (decimal total, decimal currentEmployerTotal, decimal cumulativeTotal)>();
 
             var data = updatedProvisionalData.AsEnumerable();
             var areMultipleEmployers = data.GroupBy(row => row.Field<string>("DDO Code")).Count();
             var lastData = data.Last();
+            var firstData = data.First();
             var currentEmployer = lastData["DDO Code"].ToString();
             var kgidno = lastData["KGID No"];
             var employeeName = lastData["Employee Name"];
             var panNo = lastData["PAN No"];
             var designation = lastData["Designation"];
-
+            var fromMonth = firstData["Month"];
+            var toMonth = lastData["Month"];
             var finalFilename = fileoutputPath + "\\" + employeeName.ToString().Replace(" ", "") + "_" + kgidno + "_" + panNo+".xlsx";
             // Define an array with all field names
             string[] fields = new[]
@@ -322,14 +264,21 @@ namespace ItrCalc
 
             foreach (var field in fields)
             {
-                var total = calculateSum(data, field);
+                if (updatedProvisionalData.Columns.Contains(field))
+                {
+                    var total = calculateSum(data, field);
 
-                decimal currentEmployerTotal = calculateSum(data, field, currentEmployer);
+                    decimal currentEmployerTotal = calculateSum(data, field, currentEmployer);
 
-                decimal cumulativeTotal = total - currentEmployerTotal;
+                    decimal cumulativeTotal = total - currentEmployerTotal;
 
-                results[field] = (total, currentEmployerTotal, cumulativeTotal);
-            }
+                    results[field] = (total, currentEmployerTotal, cumulativeTotal);
+                }
+                else
+                {
+                    results[field] = (0, 0, 0);
+                }
+            }   
 
             ExcelPackage.LicenseContext = OfficeOpenXml.LicenseContext.Commercial;
             using (var package = new ExcelPackage())
@@ -372,7 +321,7 @@ namespace ItrCalc
                 var sheet2range = worksheet2.Cells["A1:D2"];
                 sheet2range.Merge = true;  // Merge the cells
                 sheet2range.Style.Fill.PatternType = ExcelFillStyle.Solid;
-                sheet2range.Style.Fill.BackgroundColor.SetColor(Color.LightCyan);
+                sheet2range.Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightCyan);
 
                 // Set the font size for the merged cells
                 sheet2range.Style.Font.Size = 16;  // Set the font size to 16 (or your desired size)
@@ -435,7 +384,7 @@ namespace ItrCalc
                 sheet2rangeBackground.Style.Border.Right.Style = ExcelBorderStyle.Thin;
 
                 // Set border color (optional)
-                Color borderColor = Color.Black;
+                Color borderColor = System.Drawing.Color.Black;
                 sheet2rangeBackground.Style.Border.Top.Color.SetColor(borderColor);
                 sheet2rangeBackground.Style.Border.Bottom.Color.SetColor(borderColor);
                 sheet2rangeBackground.Style.Border.Left.Color.SetColor(borderColor);
@@ -447,7 +396,94 @@ namespace ItrCalc
                 FileInfo fi = new FileInfo(finalFilename);
                 package.SaveAs(fi);
             }
+
+            var lineNo = File.ReadAllLines(cnsFile).Length;
+
+            StringBuilder str = new StringBuilder();
+            string[] strdata = new string[30];
+            
+            strdata[0] = lineNo.ToString();
+            strdata[1] = kgidno.ToString();
+            strdata[2] = fromMonth.ToString();
+            strdata[3] = toMonth.ToString();
+            strdata[4] = firstData["Year"].ToString();
+            strdata[5] = employeeName.ToString();
+            strdata[6] = designation.ToString();
+            strdata[7] = panNo.ToString();
+            var grossSalaryfromCurrentDDo = data.Where(row => row.Field<string>("DDO Code").Equals(currentEmployer) && row.Field<string>("EntryType") == "Received")
+                .Sum(sal => Convert.ToDecimal(sal.Field<string>("Gross Salary")));
+
+            strdata[8] = grossSalaryfromCurrentDDo.ToString();
+
+            var grossSalaryfromCurrentDDoprovisional = data.Where(row => row.Field<string>("DDO Code").Equals(currentEmployer) && row.Field<string>("EntryType") != "Received")
+                .Sum(sal => Convert.ToDecimal(sal.Field<string>("Gross Salary")));
+            strdata[9] = grossSalaryfromCurrentDDoprovisional.ToString();
+
+            results.TryGetValue("Gross Salary", out var totalsalary);
+            strdata[10] = (Convert.ToInt64(totalsalary.total) - (Convert.ToInt64(grossSalaryfromCurrentDDoprovisional) +Convert.ToInt64(grossSalaryfromCurrentDDoprovisional))).ToString();
+            
+            results.TryGetValue("Basic Pay", out var baseicpay);
+            strdata[11] = baseicpay.total.ToString();
+
+            results.TryGetValue("Stagnation Increment", out var StagnationIncrement);
+            strdata[12] = StagnationIncrement.total.ToString();
+
+            results.TryGetValue("DA", out var DA);
+            strdata[13] = DA.total.ToString();
+
+            results.TryGetValue("HRA", out var HRA);
+            strdata[14] = HRA.total.ToString();
+
+            results.TryGetValue("Uniform Allowance", out var UniformAllowance);
+            strdata[15] = UniformAllowance.total.ToString();
+
+            results.TryGetValue("Independent Charge Allowance", out var IndependentChargeAllowance);
+            strdata[16] = IndependentChargeAllowance.total.ToString();
+
+            results.TryGetValue("Medical Allowance", out var MedicalAllowance);
+            strdata[17] = MedicalAllowance.total.ToString();
+
+            results.TryGetValue("Other Allowances", out var OtherAllowances);
+            strdata[18] = OtherAllowances.total.ToString();
+
+            results.TryGetValue("Income Tax", out var incometax);
+            strdata[19] = incometax.currentEmployerTotal.ToString();
+
+            strdata[20] = incometax.cumulativeTotal.ToString();
+
+            results.TryGetValue("EGIS", out var EGIS);
+            strdata[21] = EGIS.total.ToString();
+
+            results.TryGetValue("PT", out var PT);
+            strdata[22] = PT.total.ToString();
+
+            results.TryGetValue("LIC", out var LIC);
+            strdata[23] = LIC.total.ToString();
+
+            results.TryGetValue("Nps Deduction Amount", out var NpsDeductionAmount);
+            strdata[24] = NpsDeductionAmount.total.ToString();
+
+            results.TryGetValue("KGID", out var KGID);
+            strdata[25] = KGID.total.ToString();
+
+            results.TryGetValue("GPF", out var GPF);
+            strdata[26] = GPF.total.ToString();
+
+            results.TryGetValue("HBA", out var HBA);
+            strdata[27] = HBA.total.ToString();
+
+            results.TryGetValue("Housing Development Finance Corporation", out var HousingDevelopmentFinanceCorporation);
+            strdata[28] = HousingDevelopmentFinanceCorporation.total.ToString();
+
+            results.TryGetValue("Arogya Bhagya Yojana", out var ArogyaBhagyaYojana);
+            strdata[29] = ArogyaBhagyaYojana.total.ToString();
+
+            string finaldata = string.Join(",", strdata);
+
+            File.AppendAllText(cnsFile,Environment.NewLine+finaldata);
         }
+
+        
 
         private DataTable UpdateProvisionalData(DataTable dtPanSpecific)
         {
@@ -463,6 +499,12 @@ namespace ItrCalc
                 var lastCreditedMonth = lastSalaryCreditRow["Month"].ToString();
 
                 var months = GetMonths();
+
+                var lastCreditedMonthIndex= months.IndexOf(lastCreditedMonth);
+                var provisionalMonthIndex = months.IndexOf(cmbProvisionalMonths.SelectedItem.ToString());
+
+                if(provisionalMonthIndex > lastCreditedMonthIndex)
+                    return dtPanSpecific;
 
                 for (int provisonalRowIndex = receivedSalaryMonthsCount + 1; provisonalRowIndex <= 12; provisonalRowIndex++)
                 {
@@ -491,6 +533,46 @@ namespace ItrCalc
         private void lblStatus_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void btnloadfiles_Click(object sender, EventArgs e)
+        {
+            lstboxFiles.Items.Clear();
+            if (string.IsNullOrEmpty(txtPath.Text) || string.IsNullOrEmpty(txtoutput.Text)
+                || cmbProvisionalMonths.SelectedItem ==null)
+            {
+                MessageBox.Show("No Folder Path Selected", "Error");
+            }
+            else
+            {
+                var filesList = Directory.GetFiles(txtPath.Text, "*.xls*");
+                if (filesList.Count() == 0)
+                {
+                    MessageBox.Show("No files to Process");
+                    return;
+                }
+
+                if (!Directory.Exists(txtoutput.Text + "\\Processed"))
+                {
+                    Directory.CreateDirectory(txtoutput.Text + "\\Processed");
+                }
+                if (!Directory.Exists(txtoutput.Text + "\\Errors"))
+                {
+                    Directory.CreateDirectory(txtoutput.Text + "\\Errors");
+                }
+                if (!Directory.Exists(txtoutput.Text + "\\OutPut"))
+                {
+                    Directory.CreateDirectory(txtoutput.Text + "\\OutPut");
+                }
+
+                foreach (var file in filesList)
+                {
+                    lstboxFiles.Items.Add(Path.GetFileName(file));
+                }
+                toolStripStatusLabel1.Text = "Toatl Files :" + filesList.Count();
+                lstboxFiles.Visible = true;
+                btnProcess.Visible = true;
+            }
         }
     }
 }
