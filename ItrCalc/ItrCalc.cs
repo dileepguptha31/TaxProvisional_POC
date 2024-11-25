@@ -1,5 +1,6 @@
 ﻿using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.Office.Interop.Excel;
+using NPOI.SS.Formula.Functions;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using System;
@@ -351,6 +352,8 @@ namespace ItrCalc
                 }
                 worksheet.Cells[worksheet.Dimension.Address].AutoFitColumns();
 
+                #region work sheet 2
+                /*Sheet 2*/
                 var worksheet2 = package.Workbook.Worksheets.Add("Basic Information Details");
                 var sheet2range = worksheet2.Cells["A1:D2"];
                 sheet2range.Merge = true;  // Merge the cells
@@ -425,7 +428,95 @@ namespace ItrCalc
                 sheet2rangeBackground.Style.Border.Right.Color.SetColor(borderColor);
 
                 worksheet2.Cells[worksheet.Dimension.Address].AutoFitColumns();
+
+                #endregion
+
+                #region sheet 3
+
+                string[] fieldsforSheet3 = new[]
+                {
+                    "S No.",
+                    "KGID No",
+                    "Month",
+                    "Employee Name",
+                    "PAN No",
+                    "Gross Salary",
+                    "Income Tax",
+                    "EGIS",
+                    "PT",
+                    "LIC",
+                    "Nps Deduction Amount",
+                    "KGID",
+                    "GPF",
+                    "HBA",
+                    "Housing Development Finance Corporation",
+                    "Arogya Bhagya Yojana",
+                    "Gross Deduction"
+
+                };
+
+                var worksheet3 = package.Workbook.Worksheets.Add("Earning Summary");
                 
+
+                int startcolumn = 1;
+                foreach (var item in fieldsforSheet3)
+                {
+                    worksheet3.Cells[1, startcolumn].Value = item;
+                    startcolumn = startcolumn + 1;
+                }
+
+                // Make the first row bold
+                using (var range = worksheet3.Cells[1, 1, 1, fieldsforSheet3.Length+1])
+                {
+                    range.Style.Font.Bold = true;
+                    range.Style.Font.Size = 12;
+                }
+
+
+                // Write data rows
+                for (int row = 0; row < updatedProvisionalData.Rows.Count; row++)
+                {
+                    int colstart = 0;
+                    foreach (var item in fieldsforSheet3)
+                    {
+                        if (updatedProvisionalData.Columns.Contains(item))
+                            worksheet3.Cells[row + 2, colstart + 1].Value = updatedProvisionalData.Rows[row][item];
+                        else
+                            worksheet3.Cells[row + 2, colstart + 1].Value = 0;
+
+                        colstart =  colstart + 1;
+                    }
+                }
+                worksheet3.Cells[worksheet3.Dimension.Address].AutoFitColumns();
+
+
+
+                // Get the last used row in the column
+                int lastRow = worksheet3.Dimension.End.Row;
+
+                // Initialize the sum
+
+
+                worksheet3.Cells[lastRow + 2, 5].Value = "Total";
+                for (int columnToSum = 6; columnToSum <=17; columnToSum++)
+                {
+                    double sum = 0;
+                    // Loop through the rows in the column
+                    for (int row = 2; row <= lastRow; row++) // Assuming data starts at Row 2 (skipping header)
+                    {
+                        object value = worksheet3.Cells[row, columnToSum].Value;
+                        if (value != null && double.TryParse(value.ToString(), out double number))
+                        {
+                            sum += number;
+                        }
+                    }
+                    worksheet3.Cells[lastRow + 2, columnToSum].Value = sum;
+                }
+               
+
+                
+
+                #endregion
                 // Save the file
                 FileInfo fi = new FileInfo(finalFilename);
                 package.SaveAs(fi);
@@ -531,6 +622,7 @@ namespace ItrCalc
             {
                 var lastSalaryCreditRow = receivedSalaryRows.Last();
 
+
                 var lastCreditedMonth = lastSalaryCreditRow["Month"].ToString().Substring(0, 3);
 
                 var months = GetMonths();
@@ -552,6 +644,7 @@ namespace ItrCalc
                     provRow["S No."] = $"{dtPanSpecific.Rows.Count + 1}.Provisional";
                     provRow["Month"] = currentMonth;
                     provRow["EntryType"] = "Provisional";
+                    provRow["Income Tax"] = 0;
                     if (provRow["Month"] == "Jan" || provRow["Month"] == "Feb")
                     {
                         provRow["Year"] = "2025";
